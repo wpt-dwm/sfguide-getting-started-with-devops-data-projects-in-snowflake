@@ -1,0 +1,42 @@
+name: Deploy data pipeline
+
+# Action will run on pushes to selected branches
+on:
+  push:
+    branches:
+      - main
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      # Read connection secrets
+      SNOWFLAKE_AUTHENTICATOR: SNOWFLAKE_JWT
+      SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+      SNOWFLAKE_PRIVATE_KEY_RAW: ${{ secrets.SNOWFLAKE_PRIVATE_KEY }}
+      SNOWFLAKE_CLI_FEATURES_ENABLE_SNOWFLAKE_PROJECTS: true
+      SNOWFLAKE_DATABASE: UTILS
+      SNOWFLAKE_SCHEMA: PROD
+
+    steps:
+      # Checkout step is necessary if you want to use a config file from your repo
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: snowflakedb/snowflake-cli-action@v1.5
+        
+      # Deploy pipeline and override environment if branch is main
+      - name: Deploy data pipeline to ${{ github.ref_name }}
+        run: |
+          cd steps
+          if [[ "$(snow project list -x --like "%DEVOPS_HOL%" | grep -c 'No data')" -gt 0 ]]; then
+            snow project create -x DEVOPS_HOL
+          else
+              snow project add-version -x DEVOPS_HOL
+          fi
+          snow project execute -x --configuration PROD DEVOPS_HOL
