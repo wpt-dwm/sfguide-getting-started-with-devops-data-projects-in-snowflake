@@ -1,6 +1,6 @@
-# Getting Started with Snowflake DevOps
+# Getting Started with Snowflake DevOps and Data Projects in Snowflake
 
-This repository contains the code for the *DevOps: Snowflake Data Projects* quickstart.
+This repository contains the code for the *Getting Started with Snowflake DevOps and Data Projects in Snowflake* quickstart.
 
 ## Overview
 
